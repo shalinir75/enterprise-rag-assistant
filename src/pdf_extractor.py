@@ -1,95 +1,74 @@
-"""
-pdf_extractor.py
-Reads PDFs and extracts text + structured tables, saving everything to
-extracted_text.json.
-"""
 import json
-from datetime import datetime, timezone
 from pathlib import Path
 import pdfplumber
 
-RAW_DATA_DIR = Path("data/raw/bgi documents")
-OUTPUT_FILE = Path("data/processed/extracted_text.json")
+# ==========================
+# File Paths
+# ==========================
+input_folder = Path("data/raw/bgi documents")
+output_file = Path("data/processed/extracted_text.json")
 
 
-def format_table_to_text(table: list[list[str]]) -> str:
-    """Converts a raw 2D grid table into structured key-value lines."""
+# ==========================
+# Table Formatting
+# ==========================
+def format_table(table):
+    """Converts a table into readable 'Header: Value' lines."""
     if not table or len(table) < 2:
         return ""
     headers = [(h or "").strip() for h in table[0]]
-    formatted_rows = []
+    lines = []
     for row in table[1:]:
-        row_cells = []
+        parts = []
         for i, cell in enumerate(row):
             val = (cell or "").strip()
-            if not val:
-                continue
-            header_name = headers[i] if i < len(headers) and headers[i] else f"Col {i+1}"
-            row_cells.append(f"{header_name}: {val}")
-        if row_cells:
-            formatted_rows.append(", ".join(row_cells))
-    return "\n".join(formatted_rows)
+            if val:
+                header = headers[i] if i < len(headers) and headers[i] else f"Col {i+1}"
+                parts.append(f"{header}: {val}")
+        if parts:
+            lines.append(", ".join(parts))
+    return "\n".join(lines)
 
 
-def extract_page_content(page) -> str:
-    """Extracts plain text and structures any tabular data on the page."""
-    plain_text = (page.extract_text() or "").strip()
+# ==========================
+# Extract Text from PDFs
+# ==========================
+data = {}
+
+for pdf_file in sorted(input_folder.glob("*.pdf")):
     try:
-        tables = page.extract_tables()
-    except Exception:
-        tables = []
-    formatted_tables = [format_table_to_text(t) for t in tables if t]
-    formatted_tables = [t for t in formatted_tables if t]
-    if formatted_tables:
-        return f"{plain_text}\n{chr(10).join(formatted_tables)}".strip()
-    return plain_text
+        page_texts = []
+        with pdfplumber.open(pdf_file) as pdf:
+            for page in pdf.pages:
+                text = (page.extract_text() or "").strip()
+
+                # Add table content (if any) as readable "Header: Value" lines
+                tables = page.extract_tables()
+                table_text = "\n".join(format_table(t) for t in tables if t)
+                if table_text:
+                    text = f"{text}\n{table_text}".strip()
+
+                page_texts.append(text)
+
+        data[pdf_file.name] = {
+            "full_text": "\n\n".join(page_texts)
+        }
+        print(f"✅ Extracted: {pdf_file.name}")
+    except Exception as e:
+        # One bad PDF shouldn't stop the rest of the batch
+        print(f"❌ Failed to extract {pdf_file.name}: {e}")
 
 
-def extract_pages(pdf_path: Path) -> tuple[list[dict], dict]:
-    """Loops through PDF pages using pdfplumber for high-fidelity extraction."""
-    pages = []
-    with pdfplumber.open(pdf_path) as pdf:
-        for i, page in enumerate(pdf.pages, start=1):
-            page_text = extract_page_content(page)
-            if page_text.strip():
-                pages.append({
-                    "page_number": i,
-                    "text": page_text
-                })
-    metadata = {
-        "title": pdf_path.stem,  # Directly uses doc name (e.g., 'jsrs_mandatory_documents')
-        "filename": pdf_path.name
-    }
-    return pages, metadata
+# ==========================
+# Create Output Folder
+# ==========================
+output_file.parent.mkdir(parents=True, exist_ok=True)
 
 
-def extract_all_pdfs(folder: Path) -> dict:
-    results = {}
-    if not folder.exists():
-        print(f"Error: Directory '{folder}' does not exist.")
-        return results
-    for pdf_file in sorted(list(folder.glob("*.pdf"))):
-        try:
-            pages, metadata = extract_pages(pdf_file)
-            full_text = "\n\n".join(p["text"] for p in pages)
-            results[pdf_file.name] = {
-                "source_file": pdf_file.name,
-                "source_path": str(pdf_file),
-                "num_pages": len(pages),
-                "extracted_at": datetime.now(timezone.utc).isoformat(),
-                "pdf_metadata": metadata,
-                "pages": pages,
-                "full_text": full_text,
-            }
-            print(f"✅ Extracted: {pdf_file.name} ({len(pages)} pages)")
-        except Exception as e:
-            print(f"❌ Failed to extract {pdf_file.name}: {e}")
-    return results
+# ==========================
+# Save Extracted JSON
+# ==========================
+with open(output_file, "w", encoding="utf-8") as f:
+    json.dump(data, f, indent=2, ensure_ascii=False)
 
-
-if __name__ == "__main__":
-    extracted = extract_all_pdfs(RAW_DATA_DIR)
-    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        json.dump(extracted, f, indent=2, ensure_ascii=False)
-    print(f"\nDone. {len(extracted)} documents extracted -> {OUTPUT_FILE}")
+print(f"\n✅ Done. {len(data)} documents extracted -> {output_file}")
