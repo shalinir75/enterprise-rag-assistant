@@ -1,10 +1,12 @@
 {
   "jsrs-password-reset-procedure.pdf": {
     "source_file": "jsrs-password-reset-procedure.pdf",
+    "source_path": "data/raw/bgi documents/jsrs-password-reset-procedure.pdf",
     "num_pages": 1,
-    "extracted_at": "2026-07-21T20:15:56.923523+00:00",
+    "extracted_at": "2026-07-22T05:06:09.302791+00:00",
     "pdf_metadata": {
-      "title": "jsrs-password-reset-procedure"
+      "title": "jsrs-password-reset-procedure",
+      "filename": "jsrs-password-reset-procedure.pdf"
     },
     "pages": [
       {
@@ -16,10 +18,12 @@
   },
   "jsrs_after_certification.pdf": {
     "source_file": "jsrs_after_certification.pdf",
+    "source_path": "data/raw/bgi documents/jsrs_after_certification.pdf",
     "num_pages": 2,
-    "extracted_at": "2026-07-21T20:15:57.020388+00:00",
+    "extracted_at": "2026-07-22T05:06:09.395451+00:00",
     "pdf_metadata": {
-      "title": "jsrs_after_certification"
+      "title": "jsrs_after_certification",
+      "filename": "jsrs_after_certification.pdf"
     },
     "pages": [
       {
@@ -35,10 +39,12 @@
   },
   "jsrs_benefits.pdf": {
     "source_file": "jsrs_benefits.pdf",
+    "source_path": "data/raw/bgi documents/jsrs_benefits.pdf",
     "num_pages": 3,
-    "extracted_at": "2026-07-21T20:15:57.203186+00:00",
+    "extracted_at": "2026-07-22T05:06:09.573933+00:00",
     "pdf_metadata": {
-      "title": "jsrs_benefits"
+      "title": "jsrs_benefits",
+      "filename": "jsrs_benefits.pdf"
     },
     "pages": [
       {
@@ -58,10 +64,12 @@
   },
   "jsrs_certification_process.pdf": {
     "source_file": "jsrs_certification_process.pdf",
+    "source_path": "data/raw/bgi documents/jsrs_certification_process.pdf",
     "num_pages": 2,
-    "extracted_at": "2026-07-21T20:15:57.322386+00:00",
+    "extracted_at": "2026-07-22T05:06:09.690955+00:00",
     "pdf_metadata": {
-      "title": "jsrs_certification_process"
+      "title": "jsrs_certification_process",
+      "filename": "jsrs_certification_process.pdf"
     },
     "pages": [
       {
@@ -77,10 +85,12 @@
   },
   "jsrs_csn.pdf": {
     "source_file": "jsrs_csn.pdf",
+    "source_path": "data/raw/bgi documents/jsrs_csn.pdf",
     "num_pages": 6,
-    "extracted_at": "2026-07-21T20:15:58.714580+00:00",
+    "extracted_at": "2026-07-22T05:06:11.017054+00:00",
     "pdf_metadata": {
-      "title": "jsrs_csn"
+      "title": "jsrs_csn",
+      "filename": "jsrs_csn.pdf"
     },
     "pages": [
       {
@@ -112,10 +122,12 @@
   },
   "jsrs_feepaymentsupport-23-2-2022.pdf": {
     "source_file": "jsrs_feepaymentsupport-23-2-2022.pdf",
+    "source_path": "data/raw/bgi documents/jsrs_feepaymentsupport-23-2-2022.pdf",
     "num_pages": 2,
-    "extracted_at": "2026-07-21T20:15:58.859868+00:00",
+    "extracted_at": "2026-07-22T05:06:11.156052+00:00",
     "pdf_metadata": {
-      "title": "jsrs_feepaymentsupport-23-2-2022"
+      "title": "jsrs_feepaymentsupport-23-2-2022",
+      "filename": "jsrs_feepaymentsupport-23-2-2022.pdf"
     },
     "pages": [
       {
@@ -131,10 +143,12 @@
   },
   "jsrs_mandatory_documents.pdf": {
     "source_file": "jsrs_mandatory_documents.pdf",
+    "source_path": "data/raw/bgi documents/jsrs_mandatory_documents.pdf",
     "num_pages": 3,
-    "extracted_at": "2026-07-21T20:16:00.855909+00:00",
+    "extracted_at": "2026-07-22T05:06:13.131732+00:00",
     "pdf_metadata": {
-      "title": "jsrs_mandatory_documents"
+      "title": "jsrs_mandatory_documents",
+      "filename": "jsrs_mandatory_documents.pdf"
     },
     "pages": [
       {
@@ -154,10 +168,12 @@
   },
   "jsrs_quick_ref.pdf": {
     "source_file": "jsrs_quick_ref.pdf",
+    "source_path": "data/raw/bgi documents/jsrs_quick_ref.pdf",
     "num_pages": 24,
-    "extracted_at": "2026-07-21T20:16:01.398290+00:00",
+    "extracted_at": "2026-07-22T05:06:13.661034+00:00",
     "pdf_metadata": {
-      "title": "jsrs_quick_ref"
+      "title": "jsrs_quick_ref",
+      "filename": "jsrs_quick_ref.pdf"
     },
     "pages": [
       {
@@ -261,10 +277,12 @@
   },
   "jsrs_reg_subscription.pdf": {
     "source_file": "jsrs_reg_subscription.pdf",
+    "source_path": "data/raw/bgi documents/jsrs_reg_subscription.pdf",
     "num_pages": 4,
-    "extracted_at": "2026-07-21T20:16:01.568207+00:00",
+    "extracted_at": "2026-07-22T05:06:13.827312+00:00",
     "pdf_metadata": {
-      "title": "jsrs_reg_subscription"
+      "title": "jsrs_reg_subscription",
+      "filename": "jsrs_reg_subscription.pdf"
     },
     "pages": [
       {
@@ -288,10 +306,12 @@
   },
   "jsrs_validity_renewal.pdf": {
     "source_file": "jsrs_validity_renewal.pdf",
+    "source_path": "data/raw/bgi documents/jsrs_validity_renewal.pdf",
     "num_pages": 3,
-    "extracted_at": "2026-07-21T20:16:01.676679+00:00",
+    "extracted_at": "2026-07-22T05:06:13.933559+00:00",
     "pdf_metadata": {
-      "title": "jsrs_validity_renewal"
+      "title": "jsrs_validity_renewal",
+      "filename": "jsrs_validity_renewal.pdf"
     },
     "pages": [
       {
@@ -311,10 +331,12 @@
   },
   "products_and_services.pdf": {
     "source_file": "products_and_services.pdf",
+    "source_path": "data/raw/bgi documents/products_and_services.pdf",
     "num_pages": 2,
-    "extracted_at": "2026-07-21T20:16:01.741871+00:00",
+    "extracted_at": "2026-07-22T05:06:13.997774+00:00",
     "pdf_metadata": {
-      "title": "products_and_services"
+      "title": "products_and_services",
+      "filename": "products_and_services.pdf"
     },
     "pages": [
       {
@@ -330,10 +352,12 @@
   },
   "queries_related_to_pdo.pdf": {
     "source_file": "queries_related_to_pdo.pdf",
+    "source_path": "data/raw/bgi documents/queries_related_to_pdo.pdf",
     "num_pages": 1,
-    "extracted_at": "2026-07-21T20:16:01.780702+00:00",
+    "extracted_at": "2026-07-22T05:06:14.035922+00:00",
     "pdf_metadata": {
-      "title": "queries_related_to_pdo"
+      "title": "queries_related_to_pdo",
+      "filename": "queries_related_to_pdo.pdf"
     },
     "pages": [
       {
