@@ -9,17 +9,18 @@ from sentence_transformers import SentenceTransformer
 # ==============================
 # File Paths
 # ==============================
-input_file = Path("data/processed/cleaned_text.json")
+
+input_file = Path("data/processed/chunks.json")
 
 index_file = Path("data/vector_store/faiss_index.bin")
 metadata_file = Path("data/vector_store/metadata.pkl")
 
-# Create output folder
 index_file.parent.mkdir(parents=True, exist_ok=True)
 
 # ==============================
 # Load Embedding Model
 # ==============================
+
 print("Loading embedding model...")
 
 model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -27,39 +28,39 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 print("Model loaded successfully.")
 
 # ==============================
-# Load Cleaned Documents
+# Load Chunks
 # ==============================
+
 with open(input_file, "r", encoding="utf-8") as f:
-    documents = json.load(f)
+    chunks = json.load(f)
 
 texts = []
 metadata = []
 
 # ==============================
-# Extract Page Text
+# Collect Chunk Text
 # ==============================
-for pdf_name, pdf_data in documents.items():
 
-    pages = pdf_data.get("pages", [])
+for chunk in chunks:
 
-    for page in pages:
+    text = chunk.get("text", "").strip()
 
-        text = page.get("text", "").strip()
+    if not text:
+        continue
 
-        if text:
+    texts.append(text)
 
-            texts.append(text)
+    metadata.append({
+        "document": chunk["source"],
+        "chunk_id": chunk["chunk_id"]
+    })
 
-            metadata.append({
-                "document": pdf_name,
-                "page": page["page_number"]
-            })
-
-print(f"Collected {len(texts)} pages.")
+print(f"Collected {len(texts)} chunks.")
 
 # ==============================
 # Generate Embeddings
 # ==============================
+
 print("Generating embeddings...")
 
 embeddings = model.encode(
@@ -73,6 +74,7 @@ print("Embeddings generated.")
 # ==============================
 # Create FAISS Index
 # ==============================
+
 dimension = embeddings.shape[1]
 
 index = faiss.IndexFlatL2(dimension)
@@ -82,18 +84,19 @@ index.add(embeddings.astype("float32"))
 print(f"Indexed {index.ntotal} vectors.")
 
 # ==============================
-# Save Index
+# Save FAISS Index
 # ==============================
+
 faiss.write_index(index, str(index_file))
 
 # Save metadata
+
 with open(metadata_file, "wb") as f:
     pickle.dump(metadata, f)
 
-print("======================================")
-print("FAISS index saved.")
-print(index_file)
-
-print("Metadata saved.")
-print(metadata_file)
-print("======================================")
+print("=" * 50)
+print("✅ Embeddings created successfully!")
+print(f"📂 FAISS Index : {index_file}")
+print(f"📂 Metadata    : {metadata_file}")
+print(f"📄 Total Chunks: {len(texts)}")
+print("=" * 50)
