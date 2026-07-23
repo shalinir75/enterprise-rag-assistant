@@ -4,6 +4,7 @@ from pathlib import Path
 import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
+import json
 
 # ==============================
 # File Paths
@@ -41,53 +42,74 @@ with open(metadata_file, "rb") as f:
 # Load Chunks
 # ==============================
 
-import json
-
 with open(chunks_file, "r", encoding="utf-8") as f:
     chunks = json.load(f)
 
 # ==============================
-# User Query
+# Retrieval Function
 # ==============================
 
-query = input("Ask a question: ")
+def retrieve_chunks(query, k=3):
+
+    # ==============================
+    # Generate Query Embedding
+    # ==============================
+
+    query_embedding = model.encode(
+        [query],
+        convert_to_numpy=True
+    )
+
+    # ==============================
+    # Top-K Search
+    # ==============================
+
+    distances, indices = index.search(
+        query_embedding.astype("float32"),
+        k
+    )
+
+    # ==============================
+    # Build Results List
+    # ==============================
+
+    results = []
+
+    for idx in indices[0]:
+
+        if idx == -1:
+            continue
+
+        info = metadata[idx]
+        chunk = chunks[idx]
+
+        results.append({
+            "source": info["document"],     # <-- renamed from "document" to "source"
+            "chunk_id": info["chunk_id"],
+            "text": chunk["text"]
+        })
+
+    return results
+
 
 # ==============================
-# Generate Query Embedding
+# Standalone Test
 # ==============================
 
-query_embedding = model.encode(
-    [query],
-    convert_to_numpy=True
-)
+if __name__ == "__main__":
 
-# ==============================
-# Top-K Search
-# ==============================
+    query = input("Ask a question: ")
 
-k = 3
+    results = retrieve_chunks(query)
 
-distances, indices = index.search(
-    query_embedding.astype("float32"),
-    k
-)
+    print("\nMost Relevant Chunks:\n")
 
-# ==============================
-# Display Results
-# ==============================
+    for rank, r in enumerate(results, start=1):
 
-print("\nMost Relevant Chunks:\n")
-
-for rank, idx in enumerate(indices[0], start=1):
-
-    info = metadata[idx]
-
-    chunk = chunks[idx]
-
-    print("=" * 50)
-    print(f"Rank : {rank}")
-    print(f"Document : {info['document']}")
-    print(f"Chunk ID : {info['chunk_id']}")
-    print()
-    print(chunk["text"])
-    print("=" * 50)
+        print("=" * 50)
+        print(f"Rank : {rank}")
+        print(f"Source : {r['source']}")
+        print(f"Chunk ID : {r['chunk_id']}")
+        print()
+        print(r["text"])
+        print("=" * 50)
