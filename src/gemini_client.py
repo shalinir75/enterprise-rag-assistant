@@ -54,7 +54,7 @@ Answer:
     for attempt in range(3):
         try:
             response = client.models.generate_content(
-                model="models/gemini-3.6-flash",
+                model="models/gemini-2.5-flash",
                 contents=prompt
             )
 
