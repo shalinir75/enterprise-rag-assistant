@@ -34,8 +34,8 @@ def generate_response(question, context):
     prompt = f"""
 You are an AI assistant for Business Gateways International (BGI).
 
-Answer ONLY using the information provided in the context below.Provide concise and accurae
-answers.
+Answer ONLY using the information provided in the context below.Provide concise
+and accurate answers.
 
 If the answer is not available in the context, reply:
 
