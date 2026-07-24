@@ -1,115 +1,186 @@
+import json
 import pickle
 from pathlib import Path
 
-import faiss
-import numpy as np
-from sentence_transformers import SentenceTransformer
-import json
+try:
+    import faiss
+except ImportError:
+    faiss = None
 
-# ==============================
+try:
+    from sentence_transformers import SentenceTransformer
+except ImportError:
+    SentenceTransformer = None
+
+# ==========================================================
 # File Paths
-# ==============================
+# ==========================================================
 
 index_file = Path("data/vector_store/faiss_index.bin")
 metadata_file = Path("data/vector_store/metadata.pkl")
-
 chunks_file = Path("data/processed/chunks.json")
 
-# ==============================
-# Load Embedding Model
-# ==============================
+# ==========================================================
+# Global Resources (Loaded Only Once)
+# ==========================================================
 
-print("Loading embedding model...")
+model = None
+index = None
+metadata = None
+chunks = None
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
 
-print("Model loaded.")
+# ==========================================================
+# Load Resources
+# ==========================================================
 
-# ==============================
-# Load FAISS Index
-# ==============================
+def _load_resources():
+    """
+    Loads the embedding model, FAISS index,
+    metadata and chunks only once.
+    """
 
-index = faiss.read_index(str(index_file))
+    global model, index, metadata, chunks
 
-# ==============================
-# Load Metadata
-# ==============================
+    # Load embedding model
+    if model is None:
 
-with open(metadata_file, "rb") as f:
-    metadata = pickle.load(f)
+        if SentenceTransformer is None:
+            raise ImportError(
+                "sentence-transformers is not installed."
+            )
 
-# ==============================
-# Load Chunks
-# ==============================
+        print("Loading embedding model...")
 
-with open(chunks_file, "r", encoding="utf-8") as f:
-    chunks = json.load(f)
+        model = SentenceTransformer(
+            "all-MiniLM-L6-v2"
+        )
 
-# ==============================
+        print("Embedding model loaded.")
+
+    # Load FAISS
+    if index is None:
+
+        if faiss is None:
+            raise ImportError(
+                "faiss-cpu is not installed."
+            )
+
+        if not index_file.exists():
+            raise FileNotFoundError(
+                f"FAISS index not found:\n{index_file}"
+            )
+
+        print("Loading FAISS index...")
+
+        index = faiss.read_index(
+            str(index_file)
+        )
+
+        print("FAISS index loaded.")
+
+    # Load metadata
+    if metadata is None:
+
+        if not metadata_file.exists():
+            raise FileNotFoundError(
+                f"Metadata file not found:\n{metadata_file}"
+            )
+
+        with open(
+            metadata_file,
+            "rb"
+        ) as f:
+
+            metadata = pickle.load(f)
+
+    # Load chunks
+    if chunks is None:
+
+        if not chunks_file.exists():
+            raise FileNotFoundError(
+                f"Chunks file not found:\n{chunks_file}"
+            )
+
+        with open(
+            chunks_file,
+            "r",
+            encoding="utf-8"
+        ) as f:
+
+            chunks = json.load(f)
+
+
+# ==========================================================
 # Retrieval Function
-# ==============================
+# ==========================================================
 
 def retrieve_chunks(query, k=3):
+    """
+    Retrieves the top-k most relevant chunks.
+    """
 
-    # ==============================
-    # Generate Query Embedding
-    # ==============================
+    _load_resources()
 
     query_embedding = model.encode(
         [query],
         convert_to_numpy=True
     )
 
-    # ==============================
-    # Top-K Search
-    # ==============================
-
     distances, indices = index.search(
         query_embedding.astype("float32"),
         k
     )
 
-    # ==============================
-    # Build Results List
-    # ==============================
-
     results = []
 
-    for idx in indices[0]:
+    for position, idx in enumerate(indices[0]):
 
         if idx == -1:
             continue
 
-        info = metadata[idx]
-        chunk = chunks[idx]
-
-        results.append({
-            "source": info["document"],     # <-- renamed from "document" to "source"
-            "chunk_id": info["chunk_id"],
-            "text": chunk["text"]
-        })
+        results.append(
+            {
+                "source": metadata[idx]["document"],
+                "chunk_id": metadata[idx]["chunk_id"],
+                "text": chunks[idx]["text"],
+                "score": float(distances[0][position])
+            }
+        )
 
     return results
 
 
-# ==============================
-# Standalone Test
-# ==============================
+# ==========================================================
+# Standalone Testing
+# ==========================================================
 
 if __name__ == "__main__":
 
-    query = input("Ask a question: ")
+    while True:
 
-    results = retrieve_chunks(query)
+        question = input("\nAsk a question (or type exit): ")
 
-    print("\nMost Relevant Chunks:\n")
+        if question.lower() == "exit":
+            break
 
-    for rank, r in enumerate(results, start=1):
+        try:
 
-        print("=" * 50)
-        print(f"Rank : {rank}")
-        print(f"Source : {r['source']}")
-        print(f"Chunk ID : {r['chunk_id']}")
-        print()
-        print(r["text"])
-        print("=" * 50)
+            results = retrieve_chunks(question)
+
+            print("\nRetrieved Chunks:\n")
+
+            for i, chunk in enumerate(results, start=1):
+
+                print("=" * 60)
+                print(f"Rank      : {i}")
+                print(f"Source    : {chunk['source']}")
+                print(f"Chunk ID  : {chunk['chunk_id']}")
+                print(f"Score     : {chunk['score']:.4f}")
+                print()
+                print(chunk["text"])
+                print("=" * 60)
+
+        except Exception as e:
+
+            print(f"\nError: {e}")
