@@ -1,0 +1,28 @@
+```txt
+# Core AI & LLM
+google-generativeai
+langchain
+langchain-text-splitters
+sentence-transformers
+
+# Vector Database
+faiss-cpu
+
+# PDF Processing
+pypdf
+
+# Environment Variables
+python-dotenv
+
+# Numerical Computing
+numpy
+
+# Machine Learning Utilities
+scikit-learn
+
+# Progress Bars
+tqdm
+
+# Optional Web App
+streamlit
+```
