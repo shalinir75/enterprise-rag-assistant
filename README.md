@@ -11,7 +11,7 @@ An Enterprise Retrieval-Augmented Generation (RAG) chatbot developed for **Busin
 - 🧠 Retrieval-Augmented Generation (RAG)
 - ⚡ FAISS vector database for fast retrieval
 - 🤖 Google Gemini API for answer generation
-- ✂️ Intelligent text chunking
+- ✂️ Intelligent text chunking (LangChain's `RecursiveCharacterTextSplitter`)
 - 📑 Source-aware responses
 - 🧹 Automated document preprocessing
 
@@ -22,11 +22,12 @@ An Enterprise Retrieval-Augmented Generation (RAG) chatbot developed for **Busin
 | Component | Technology |
 |-----------|------------|
 | Language | Python |
-| LLM | Google Gemini API |
+| LLM | Google Gemini API (`google-genai`) |
 | Embedding Model | Sentence Transformers (all-MiniLM-L6-v2) |
 | Vector Database | FAISS |
-| Framework | LangChain |
-| Document Processing | PyPDF, JSON |
+| Text Splitting | LangChain (`langchain_text_splitters`) |
+| Document Processing | pdfplumber, JSON |
+| UI | Streamlit |
 | Environment | Python Virtual Environment |
 
 ---
@@ -38,7 +39,7 @@ enterprise-rag-assistant/
 │
 ├── data/
 │   ├── raw/
-│   │   └── bgi documents/
+│   │   └── bgi documents/          # source PDFs
 │   ├── processed/
 │   │   ├── extracted_text.json
 │   │   ├── cleaned_text.json
@@ -48,22 +49,21 @@ enterprise-rag-assistant/
 │       └── metadata.pkl
 │
 ├── src/
-│   ├── app.py
-│   ├── pdf_extractor.py
-│   ├── preprocessing.py
-│   ├── chunking.py
-│   ├── embeddings.py
-│   ├── vector_store.py
-│   ├── rag_pipeline.py
-│   ├── gemini_client.py
-│   ├── prompt_template.py
-│   └── test_pipeline.py
+│   ├── app.py                # Streamlit UI
+│   ├── pdf_extractor.py      # PDF -> extracted_text.json
+│   ├── preprocessing.py      # cleans extracted text -> cleaned_text.json
+│   ├── chunking.py           # splits text into chunks -> chunks.json
+│   ├── embeddings.py         # builds FAISS index from chunks
+│   ├── vector_store.py       # loads index, retrieves top-k chunks
+│   ├── rag_pipeline.py       # orchestrates retrieval + generation
+│   ├── gemini_client.py      # Gemini API client
+│   ├── prompt_template.py    # builds grounded prompt from retrieved chunks
+│   └── test_pipeline.py      # CLI script to test retrieval + generation
 │
-├── .env
+├── .env                       # API keys
 ├── .gitignore
 ├── LICENSE
-├── README.md
-└── test_env.py
+└── README.md
 ```
 
 ---
@@ -71,38 +71,37 @@ enterprise-rag-assistant/
 ## RAG Pipeline
 
 ```
-Enterprise Documents
+Enterprise Documents (PDF)
         │
         ▼
-Document Extraction
+pdf_extractor.py  ──▶  extracted_text.json
         │
         ▼
-Text Cleaning & Preprocessing
+preprocessing.py  ──▶  cleaned_text.json
         │
         ▼
-Text Chunking
+chunking.py  ──▶  chunks.json
         │
         ▼
-Sentence Embeddings
-        │
-        ▼
-FAISS Vector Store
+embeddings.py  ──▶  FAISS index + metadata
         │
         ▼
 User Query
         │
         ▼
-Similarity Search
+vector_store.py (similarity search)
         │
         ▼
-Relevant Context
+prompt_template.py (build grounded prompt)
         │
         ▼
-Google Gemini
+gemini_client.py (Google Gemini)
         │
         ▼
 Generated Response
 ```
+
+`rag_pipeline.py` ties retrieval (`vector_store.py`) and generation (`gemini_client.py`) together into a single `ask_question()` function.
 
 ---
 
@@ -112,9 +111,6 @@ Generated Response
 
 ```bash
 git clone https://github.com/shalinir75/enterprise-rag-assistant.git
-```
-
-```bash
 cd enterprise-rag-assistant
 ```
 
@@ -124,77 +120,75 @@ Windows
 
 ```bash
 python -m venv .venv
+.venv\Scripts\activate
 ```
 
-Activate
+macOS/Linux
 
 ```bash
-.venv\Scripts\activate
+python -m venv .venv
+source .venv/bin/activate
 ```
 
 ### Install dependencies
 
 ```bash
-pip install -r requirements.txt
+pip install streamlit google-genai python-dotenv pdfplumber faiss-cpu sentence-transformers langchain-text-splitters
 ```
+
+> No `requirements.txt` exists in the repo yet. Once your environment is set up, run `pip freeze > requirements.txt` to generate one — future setup can then use `pip install -r requirements.txt`.
 
 ---
 
 ## Environment Variables
 
-Create a `.env` file in the project root.
+The project reads its Gemini API key from a `.env` file in the project root:
 
 ```env
-GOOGLE_API_KEY=YOUR_API_KEY
+GEMINI_API_KEY=YOUR_API_KEY
 ```
 
 ---
 
 ## Running the Pipeline
 
-Extract documents
+Run these once, in order, to build the knowledge base from the PDFs in `data/raw/bgi documents/`:
 
 ```bash
-python src/pdf_extractor.py
+python src/pdf_extractor.py     # extract text from PDFs
+python src/preprocessing.py     # clean extracted text
+python src/chunking.py          # split into chunks
+python src/embeddings.py        # embed chunks + build FAISS index
 ```
 
-Preprocess documents
+Then query from the command line:
 
 ```bash
-python src/preprocessing.py
+python src/test_pipeline.py     # or: python src/rag_pipeline.py
 ```
 
-Chunk text
+Or launch the web UI:
 
 ```bash
-python src/chunking.py
+streamlit run src/app.py
 ```
 
-Generate embeddings
-
-```bash
-python src/embeddings.py
-```
-
-Run the chatbot
-
-```bash
-python src/app.py
-```
+> **Note:** `app.py` currently uses hardcoded placeholder responses and is not yet wired to `rag_pipeline.py` (marked `# TODO` in the code). For real answers today, use `test_pipeline.py` or `rag_pipeline.py` directly; connecting the Streamlit UI to the pipeline is the next step.
 
 ---
 
 ## Workflow
 
-1. Load enterprise documents.
-2. Extract text from PDFs.
+1. Load enterprise documents (PDFs).
+2. Extract text (and tables) from PDFs.
 3. Clean and preprocess extracted text.
 4. Split documents into semantic chunks.
 5. Generate embeddings using Sentence Transformers.
-6. Store embeddings in FAISS.
-7. Accept user query.
-8. Retrieve the most relevant chunks.
-9. Generate a context-aware response using Gemini.
+6. Store embeddings in a FAISS index.
+7. Accept a user query.
+8. Retrieve the most relevant chunks via similarity search.
+9. Build a grounded prompt from the retrieved context.
+10. Generate a context-aware response using Gemini.
 
 ---
 
@@ -208,10 +202,19 @@ python src/app.py
 
 ---
 
+## Project Status
+
+🚧 Active development.
+
+- ✅ PDF extraction, preprocessing, chunking, embeddings, FAISS retrieval, prompt building, and Gemini generation are implemented and working end-to-end via CLI (`rag_pipeline.py` / `test_pipeline.py`).
+- 🔧 Streamlit UI (`app.py`) exists but still uses placeholder/mock responses — connecting it to `rag_pipeline.py` is the next step.
+
+---
+
 ## Future Enhancements
 
+- Wire up the Streamlit UI to the real RAG pipeline
 - Support for DOCX, PPTX, and HTML documents
-- Streamlit web interface
 - Conversation history
 - Multi-user authentication
 - Hybrid keyword + semantic search
