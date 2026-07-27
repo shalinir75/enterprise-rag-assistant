@@ -115,12 +115,21 @@ def _load_resources():
 # Retrieval Function
 # ==========================================================
 
-def retrieve_chunks(query, k=3):
+def retrieve_chunks(query, k=8):
     """
     Retrieves the top-k most relevant chunks.
     """
 
     _load_resources()
+
+    query = query.lower().strip()
+
+    # Query rewriting
+    if "get jsrs" in query:
+        query = "how to apply for jsrs certification process"
+
+    elif "obtain jsrs" in query:
+        query = "how to apply for jsrs certification process"
 
     query_embedding = model.encode(
         [query],
