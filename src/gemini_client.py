@@ -34,17 +34,22 @@ def generate_response(question, context):
     prompt = f"""
 You are an AI assistant for Business Gateways International (BGI).
 
-Answer ONLY using the information provided in the context below.Provide concise
-and accurate answers.
+Your task is to answer the user's question using ONLY the information provided in the retrieved context.
 
-If the answer is not available in the context, reply:
-
+Instructions:
+- Answer clearly, accurately, and concisely.
+- Do NOT use outside knowledge.
+- If the retrieved context contains enough information, answer in your own words.
+- If the information is only partially available, provide the available information instead of refusing to answer.
+- Do not invent facts or make assumptions.
+- Only respond with:
 "I couldn't find the requested information in the available documents."
+if the retrieved context contains no relevant information for the user's question.
 
-Context:
+Retrieved Context:
 {context}
 
-Question:
+User Question:
 {question}
 
 Answer:
@@ -58,7 +63,10 @@ Answer:
                 contents=prompt
             )
 
-            return response.text
+            if hasattr(response, "text") and response.text:
+                return response.text.strip()
+
+            return "I couldn't generate a response."
 
         except Exception as e:
             print(f"Attempt {attempt + 1} failed: {e}")
@@ -67,6 +75,7 @@ Answer:
                 return f"Error: {e}"
 
             time.sleep(5)
+
 
 # ==========================================
 # Test
