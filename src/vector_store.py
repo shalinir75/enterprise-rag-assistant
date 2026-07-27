@@ -30,9 +30,9 @@ metadata = None
 chunks = None
 
 
-# ==========================================================
+# ====================================================
 # Load Resources
-# ==========================================================
+# ====================================================
 
 def _load_resources():
     """
@@ -42,7 +42,7 @@ def _load_resources():
 
     global model, index, metadata, chunks
 
-    # Load embedding model
+    # Load embedding model.
     if model is None:
 
         if SentenceTransformer is None:
