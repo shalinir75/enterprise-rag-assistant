@@ -370,11 +370,8 @@ st.markdown(
 # =========================================================
 
 if st.session_state.messages:
-    left, right = st.columns([1, 8])
-
-    with left:
-        if st.button("🏠 Home", use_container_width=True):
-            go_home()
+    if st.button("🏠 Home"):
+        go_home()
 
 # =========================================================
 # WELCOME SCREEN
